@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORE AI</title>
+    <link rel="icon" href="CoreAI.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #191a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a3a3a3;
+            --border-color: #2d2e2e;
+            --accent-color: #20b2aa;
+            --sidebar-width: 260px;
+            --card-bg: #202222;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            transition: background-color 0.3s ease;
+            font-size: 18px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100%;
+            border-right: 1px solid var(--border-color);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-color);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            position: absolute;
+            left: 0;
+            z-index: 100;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .logo-placeholder {
+            font-weight: 700;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-toggle-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+
+        .new-thread-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-bottom: 24px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .nav-item:hover {
+            background-color: #2d2e2e;
+        }
+
+        .nav-item.active {
+            background-color: #2d2e2e;
+            color: var(--text-primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease;
+            position: relative;
+            background-color: transparent;
+            overflow: hidden;
+        }
+
+        .code-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-icon {
+            position: absolute;
+            color: var(--text-secondary);
+            opacity: 0.15;
+            transition: transform 0.1s linear, opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .collision-flash {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px white;
+            pointer-events: none;
+            z-index: 1;
+            animation: flash-out 0.4s ease-out forwards;
+        }
+
+        @keyframes flash-out {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(4); opacity: 0; }
+        }
+
+        .main-content.full-width {
+            margin-left: 0;
+        }
+
+        header {
+            height: 64px;
+            padding: 0 24px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 16px;
+            z-index: 10;
+        }
+
+        .btn-outline {
+            padding: 6px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-dark {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #ffffff;
+            color: #191919;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .logo-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        @keyframes glow {
+            0% { filter: drop-shadow(0 0 10px rgba(32, 178, 170, 0.4)); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 30px rgba(32, 178, 170, 0.8)); transform: scale(1.02); }
+            100% { filter: drop-shadow(0 0 10px rgba(32, 178, 170, 0.4)); transform: scale(1); }
+        }
+
+        .logo-container img {
+            width: 280px;
+            height: auto;
+            object-fit: contain;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .hero-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            font-size: 1.1rem;
+        }
+
+        .search-container {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            margin-bottom: 16px;
+        }
+
+        .search-input-wrapper {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            padding: 8px;
+            outline: none;
+            color: var(--text-primary);
+        }
+
+        .search-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .control-item:hover {
+            background: #2d2e2e;
+        }
+
+        .submit-btn {
+            background: #2d2e2e;
+            color: #444;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: not-allowed;
+        }
+
+        .submit-btn.active {
+            background: var(--accent-color);
+            color: white;
+            cursor: pointer;
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .action-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            background: var(--card-bg);
+        }
+
+        .action-chip:hover {
+            background: #2d2e2e;
+        }
+
+        .footer-text {
+            font-size: 0.7rem;
+            color: #999;
+            margin-top: 24px;
+            line-height: 1.4;
+        }
+
+        .footer-text a {
+            color: #777;
+            text-decoration: none;
+        }
+
+        .sidebar-trigger {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            display: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+
+        .main-content.full-width .sidebar-trigger {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-placeholder">
+                <img src="logo.png" alt="CORE AI Logo" style="height: 36px; width: 36px; object-fit: contain;"> CORE AI
+            </div>
+            <button class="sidebar-toggle-btn" id="hideSidebarBtn">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+        <button class="new-thread-btn">
+            <i class="fas fa-plus"></i> New Chat
+        </button>
+        <div class="sidebar-section">
+            <div class="nav-item active">
+                <i class="fas fa-home"></i> Home
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-layer-group"></i> Library
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">History</div>
+            <p style="font-size: 0.8rem; color: #999; padding-left: 12px;">Threads will appear here</p>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Settings</div>
+            <div class="nav-item" id="themeToggle">
+                <i class="fas fa-adjust"></i> Switch Theme
+            </div>
+        </div>
+        <div class="sidebar-section" style="margin-top: auto;">
+            <div class="nav-item" style="font-size: 0.7rem; cursor: default;">
+                All rights reserved to core ai
+            </div>
+        </div>
+    </div>
+    <div class="main-content" id="mainContent">
+        <div class="code-background" id="codeBg"></div>
+        <div class="sidebar-trigger" id="showSidebarBtn">
+            <i class="fas fa-bars"></i>
+        </div>
+        <header>
+            <button class="btn-outline">Log In</button>
+            <button class="btn-dark">Sign Up</button>
+        </header>
+        <div class="container">
+            <div class="logo-container">
+                <img src="logo.png" alt="CORE AI Logo">
+            </div>
+            <h1 class="hero-title" style="letter-spacing: 2px; margin-top: 10px;">CORE <span style="color: #20b2aa; text-shadow: 0 0 15px rgba(32, 178, 170, 0.4); font-size: 0.85em;">AI</span></h1>
+            <p class="hero-subtitle">I'm here to help you with any questions or tasks you may have.</p>
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Type your message here...">
+                </div>
+                <div class="search-controls">
+                    <div class="control-group">
+                        <div class="control-item"><i class="fas fa-paperclip"></i></div>
+                        <div class="control-item"><i class="fas fa-microphone"></i></div>
+                        <div class="control-item"><i class="fas fa-image"></i> Image Generation</div>
+                        <div class="control-item"><i class="fas fa-desktop"></i> Control your computer</div>
+                    </div>
+                    <div class="control-group">
+                        <div class="control-item">CORE AI <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></div>
+                        <button class="submit-btn" id="submitBtn">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="quick-actions">
+                <div class="action-chip"><i class="fas fa-code"></i> Displaying the code execution screen</div>
+                <div class="action-chip"><i class="fas fa-share-alt"></i> Uploading videos to social media</div>
+            </div>
+            <div class="footer-text">
+                By continuing, you confirm that you have read and accepted our <a href="#">Terms of Use</a>, <a href="#">Privacy Policy</a>, and <a href="#">Subscription Terms</a>
+                <br><br>
+                Core AI هو نموذج ذكاء اصطناعي وقد ينتج عنه أخطاء.
+            </div>
+        </div>
+    </div>
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const hideSidebarBtn = document.getElementById('hideSidebarBtn');
+        const showSidebarBtn = document.getElementById('showSidebarBtn');
+        const searchInput = document.getElementById('searchInput');
+        const submitBtn = document.getElementById('submitBtn');
+
+        hideSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('full-width');
+        });
+
+        showSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.remove('collapsed');
+            mainContent.classList.remove('full-width');
+        });
+
+        searchInput.addEventListener('input', () => {
+            if (searchInput.value.trim().length > 0) {
+                submitBtn.classList.add('active');
+            } else {
+                submitBtn.classList.remove('active');
+            }
+        });
+
+        submitBtn.addEventListener('click', () => {
+            if (submitBtn.classList.contains('active')) {
+                alert('Searching for: ' + searchInput.value);
+                searchInput.value = '';
+                submitBtn.classList.remove('active');
+            }
+        });
+
+        const themeToggle = document.getElementById('themeToggle');
+        let isDark = true;
+        themeToggle.addEventListener('click', () => {
+            isDark = !isDark;
+            if (isDark) {
+                document.documentElement.style.setProperty('--bg-color', '#191a1a');
+                document.documentElement.style.setProperty('--text-primary', '#ffffff');
+                document.documentElement.style.setProperty('--card-bg', '#202222');
+                document.documentElement.style.setProperty('--border-color', '#2d2e2e');
+                document.body.style.backgroundColor = '#191a1a';
+                sidebar.style.backgroundColor = '#191a1a';
+            } else {
+                document.documentElement.style.setProperty('--bg-color', '#ffffff');
+                document.documentElement.style.setProperty('--text-primary', '#191919');
+                document.documentElement.style.setProperty('--card-bg', '#fcfcfc');
+                document.documentElement.style.setProperty('--border-color', '#e5e5e5');
+                document.body.style.backgroundColor = '#ffffff';
+                sidebar.style.backgroundColor = '#ffffff';
+            }
+        });
+
+        const codeBg = document.getElementById('codeBg');
+        const iconClasses = [
+            'fas fa-code', 'fas fa-terminal', 'fas fa-database', 'fas fa-microchip',
+            'fas fa-network-wired', 'fas fa-file-code', 'fab fa-python', 'fab fa-js-square',
+            'fab fa-html5', 'fab fa-css3-alt', 'fas fa-cube', 'fas fa-robot',
+            'fas fa-brain', 'fas fa-cogs', 'fas fa-eye', 'fas fa-language',
+            'fas fa-project-diagram', 'fas fa-microscope', 'fas fa-flask'
+        ];
+        const particles = [];
+        const particleCount = 60;
+
+        for (let i = 0; i < particleCount; i++) {
+            const iconEl = document.createElement('i');
+            iconEl.className = iconClasses[Math.floor(Math.random() * iconClasses.length)] + ' bg-icon';
+            codeBg.appendChild(iconEl);
+            particles.push({
+                el: iconEl,
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                vx: (Math.random() - 0.5) * 4,
+                vy: (Math.random() - 0.5) * 4,
+                radius: 15
+            });
+        }
+
+        function createFlash(x, y) {
+            const flash = document.createElement('div');
+            flash.className = 'collision-flash';
+            flash.style.left = x + 'px';
+            flash.style.top = y + 'px';
+            codeBg.appendChild(flash);
+            setTimeout(() => flash.remove(), 400);
+        }
+
+        function updatePhysics() {
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.x < 0 || p.x > window.innerWidth) p.vx *= -1;
+                if (p.y < 0 || p.y > window.innerHeight) p.vy *= -1;
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dx = p2.x - p.x;
+                    const dy = p2.y - p.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < p.radius + p2.radius) {
+                        const tempVx = p.vx, tempVy = p.vy;
+                        p.vx = p2.vx; p.vy = p2.vy;
+                        p2.vx = tempVx; p2.vy = tempVy;
+                        createFlash((p.x + p2.x) / 2, (p.y + p2.y) / 2);
+                        p.x += p.vx; p.y += p.vy;
+                    }
+                }
+                p.el.style.transform = 'translate(' + p.x + 'px, ' + p.y + 'px)';
+            }
+            requestAnimationFrame(updatePhysics);
+        }
+        updatePhysics();
+    </script>
+</body>
+</html>
