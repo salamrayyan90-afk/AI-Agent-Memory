@@ -1,7 +1,18 @@
 import sys
 import subprocess
 import os
+import streamlit as st
 
+# كود سحري لإخفاء كل زوائد Streamlit وجعل واجهتك هي الأساس
+st.markdown("""
+    <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+        [data-testid="stSidebar"] {display: none;}
+        .stApp {overflow: hidden;}
+    </style>
+""", unsafe_allow_html=True)
 try:
     from groq import Groq
     import psutil
