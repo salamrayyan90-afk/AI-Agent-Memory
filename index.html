@@ -3,251 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CORE AI</title>
-    <link rel="icon" href="CoreAI.ico" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <title>CORE AI | المحرك الذكي</title>
     <style>
-        :root {
-            --bg-color: #191a1a;
-            --text-primary: #ffffff;
-            --text-secondary: #a3a3a3;
-            --border-color: #2d2e2e;
-            --accent-color: #20b2aa;
-            --card-bg: #202222;
+        /* التنسيق الأساسي لملء الشاشة */
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden; background: #0a0a0a; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        #canvas { 
+            position: absolute; top: 0; left: 0; z-index: 1; 
         }
 
-        html, body {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            min-width: 100vw;
-            min-height: 100vh;
-            overflow: hidden;
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
+        .ui-container { 
+            position: relative; z-index: 2; display: flex; 
+            flex-direction: column; align-items: center; 
+            justify-content: center; height: 100vh; color: white; 
+            background: rgba(0, 0, 0, 0.2);
         }
 
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            max-width: 700px;
-            padding: 24px;
-            text-align: center;
+        .logo { 
+            width: 180px; margin-bottom: 30px; 
+            filter: drop-shadow(0 0 10px rgba(0, 128, 128, 0.5));
         }
 
-        .logo-container {
-            margin-bottom: 20px;
+        .search-container { 
+            background: rgba(255, 255, 255, 0.05); 
+            padding: 5px 15px; border-radius: 50px; 
+            display: flex; align-items: center; 
+            width: 85%; max-width: 650px; 
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
-        @keyframes glow {
-            0% { filter: drop-shadow(0 0 10px rgba(32, 178, 170, 0.4)); transform: scale(1); }
-            50% { filter: drop-shadow(0 0 30px rgba(32, 178, 170, 0.8)); transform: scale(1.02); }
-            100% { filter: drop-shadow(0 0 10px rgba(32, 178, 170, 0.4)); transform: scale(1); }
+        input { 
+            background: none; border: none; color: white; 
+            flex: 1; padding: 15px; outline: none; 
+            font-size: 18px; text-align: right;
         }
 
-        .logo-container img {
-            width: 260px;
-            height: auto;
-            object-fit: contain;
-            animation: glow 3s ease-in-out infinite;
+        button { 
+            background: #008080; border: none; color: white; 
+            padding: 12px 25px; border-radius: 25px; 
+            cursor: pointer; transition: all 0.3s ease;
+            font-weight: bold;
         }
 
-        .hero-title {
-            font-size: 2rem;
-            margin-bottom: 8px;
-            font-weight: 500;
-            letter-spacing: 2px;
+        button:hover { 
+            background: #00a8a8; transform: scale(1.05); 
         }
 
-        .hero-title span {
-            color: #20b2aa;
-            text-shadow: 0 0 15px rgba(32, 178, 170, 0.4);
-            font-size: 0.9em;
+        #response-area { 
+            margin-top: 30px; width: 85%; max-width: 650px; 
+            text-align: center; font-size: 18px; line-height: 1.6; 
+            color: #ccc; min-height: 50px;
+            padding: 20px; border-radius: 15px;
         }
 
-        .hero-subtitle {
-            color: var(--text-secondary);
-            margin-bottom: 28px;
-            font-size: 1rem;
-        }
-
-        .search-container {
-            width: 100%;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 14px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-
-        .search-input-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .search-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            font-size: 1rem;
-            padding: 10px 12px;
-            outline: none;
-            color: var(--text-primary);
-        }
-
-        .search-input::placeholder {
-            color: var(--text-secondary);
-        }
-
-        .submit-btn {
-            background: #2d2e2e;
-            color: #555;
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: not-allowed;
-            flex-shrink: 0;
-        }
-
-        .submit-btn.active {
-            background: var(--accent-color);
-            color: white;
-            cursor: pointer;
-        }
-
-        .submit-btn.active:hover {
-            filter: brightness(1.1);
-        }
-
-        .submit-btn.loading {
-            pointer-events: none;
-            opacity: 0.8;
-        }
-
-        .message-feedback {
-            margin-top: 12px;
-            font-size: 0.9rem;
-            min-height: 1.2em;
-        }
-
-        .message-feedback.error {
-            color: #e57373;
-        }
-
-        .message-feedback.success {
-            color: var(--accent-color);
-        }
+        /* تأثير جاري التفكير */
+        .loading { color: #008080; font-style: italic; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo-container">
-            <img src="logo.png" alt="CORE AI Logo" id="mainLogo">
-        </div>
-        <h1 class="hero-title">CORE <span>AI</span></h1>
-        <p class="hero-subtitle">اكتب سؤالك أو طلبك هنا — أنا هنا لمساعدتك.</p>
+    <canvas id="canvas"></canvas>
+
+    <div class="ui-container">
+        <img src="logo.png" alt="CORE AI" class="logo">
+        
         <div class="search-container">
-            <div class="search-input-wrapper">
-                <input type="text" class="search-input" id="searchInput" placeholder="اكتب رسالتك هنا..." autocomplete="off">
-                <button class="submit-btn" id="submitBtn" type="button" aria-label="إرسال">
-                    <i class="fas fa-arrow-up"></i>
-                </button>
-            </div>
+            <input type="text" id="searchInput" placeholder="اسأل CORE AI عن أي شيء..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendRequest()">إرسال</button>
         </div>
-        <div class="message-feedback" id="messageFeedback" aria-live="polite"></div>
+
+        <div id="response-area"></div>
     </div>
+
     <script>
-        (function() {
-            var searchInput = document.getElementById('searchInput');
-            var submitBtn = document.getElementById('submitBtn');
-            var messageFeedback = document.getElementById('messageFeedback');
+        // --- 1. محرك الربط مع API Vercel ---
+        async function sendRequest() {
+            const input = document.getElementById('searchInput');
+            const responseArea = document.getElementById('response-area');
+            const message = input.value.trim();
 
-            // عنوان الـ API — غيّره عند ربط الـ Backend
-            var API_BASE = window.CORE_AI_API || '';
-            var API_CHAT_ENDPOINT = API_BASE + '/api/chat';
+            if (!message) return;
 
-            function setFeedback(text, isError) {
-                messageFeedback.textContent = text || '';
-                messageFeedback.className = 'message-feedback' + (isError ? ' error' : text ? ' success' : '');
-            }
+            // تحديث الواجهة لبدء المعالجة
+            responseArea.innerHTML = '<span class="loading">جاري التفكير في رد مناسب...</span>';
+            input.value = "";
 
-            function setLoading(loading) {
-                if (loading) {
-                    submitBtn.classList.add('loading');
-                    submitBtn.setAttribute('aria-busy', 'true');
-                } else {
-                    submitBtn.classList.remove('loading');
-                    submitBtn.removeAttribute('aria-busy');
-                }
-            }
-
-            function sendToAPI() {
-                var val = searchInput.value.trim();
-                if (!val) return;
-
-                setFeedback('');
-                setLoading(true);
-
-                fetch(API_CHAT_ENDPOINT, {
+            try {
+                const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: val })
-                })
-                .then(function(res) {
-                    if (!res.ok) throw new Error('Network response was not ok');
-                    return res.json();
-                })
-                .then(function(data) {
-                    searchInput.value = '';
-                    submitBtn.classList.remove('active');
-                    setFeedback(data.reply || 'تم الإرسال.', false);
-                    setTimeout(function() { setFeedback(''); }, 3000);
-                })
-                .catch(function(err) {
-                    setFeedback('لم يتم الاتصال بالخادم. سيتم ربط الـ Backend لاحقاً.', true);
-                })
-                .finally(function() {
-                    setLoading(false);
+                    body: JSON.stringify({ message: message })
                 });
+
+                if (!response.ok) throw new Error('فشل الاتصال بالسيرفر');
+
+                const data = await response.json();
+                responseArea.innerText = data.reply;
+            } catch (error) {
+                responseArea.innerHTML = '<span style="color: #ff4b4b;">حدث خطأ: تأكد من إعداد مفاتيح API في Vercel بشكل صحيح.</span>';
+                console.error('Error:', error);
             }
+        }
 
-            searchInput.addEventListener('input', function() {
-                if (searchInput.value.trim().length > 0) {
-                    submitBtn.classList.add('active');
-                } else {
-                    submitBtn.classList.remove('active');
-                }
-            });
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') sendRequest();
+        }
 
-            submitBtn.addEventListener('click', function() {
-                if (submitBtn.classList.contains('active')) sendToAPI();
-            });
+        // --- 2. محرك الفيزياء (Physics Background) ---
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
 
-            searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') sendToAPI();
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.radius = Math.random() * 2;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 128, 128, 0.5)';
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 100; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
             });
-        })();
+            requestAnimationFrame(animate);
+        }
+        animate();
     </script>
 </body>
 </html>
