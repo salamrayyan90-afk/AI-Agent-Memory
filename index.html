@@ -1,118 +1,71 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CORE AI | المحرك الذكي</title>
+    <title>CORE AI | Intelligence Hub</title>
     <style>
-        /* 1. التنسيق الأساسي وإلغاء الهوامش */
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
             overflow: hidden; background: #0a0a0a; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
         }
-
-        #canvas { 
-            position: absolute; top: 0; left: 0; z-index: 1; 
-        }
-
-        /* 2. حاوية الواجهة */
+        #canvas { position: absolute; top: 0; left: 0; z-index: 1; }
         .ui-container { 
             position: relative; z-index: 2; display: flex; 
             flex-direction: column; align-items: center; 
-            justify-content: center; height: 100vh; 
-            pointer-events: none;
+            justify-content: center; height: 100vh; color: white; 
         }
-
-        .content-box {
-            pointer-events: auto;
-            display: flex; flex-direction: column; align-items: center;
-            width: 100%;
-        }
-
-        /* 3. تنسيق اللوجو لإزالة الخلفية برمجياً قدر الإمكان */
-        .logo-wrapper {
-            margin-bottom: 30px;
-            /* إضافة توهج حول الشعار */
-            filter: drop-shadow(0 0 20px rgba(0, 128, 128, 0.8));
-        }
-
         .logo { 
-            width: 200px; 
-            display: block;
-            /* السر هنا: دمج الصورة مع الخلفية لإخفاء المربع الداكن */
-            mix-blend-mode: screen;
-            border: none !important;
-            outline: none !important;
+            width: 220px; margin-bottom: 30px; 
+            filter: drop-shadow(0 0 20px rgba(0, 128, 128, 0.6));
+            mix-blend-mode: normal !important;
+            border: none;
         }
-
-        /* 4. صندوق البحث الاحترافي */
         .search-container { 
-            background: rgba(255, 255, 255, 0.07); 
+            background: rgba(255, 255, 255, 0.05); 
             padding: 5px 15px; border-radius: 50px; 
             display: flex; align-items: center; 
-            width: 85%; max-width: 650px; 
-            backdrop-filter: blur(20px);
+            width: 85%; max-width: 600px; 
+            backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         }
-
         input { 
             background: none; border: none; color: white; 
-            flex: 1; padding: 15px; outline: none; 
-            font-size: 18px; text-align: right;
+            flex: 1; padding: 15px; outline: none; font-size: 18px; 
         }
-
         button { 
             background: #008080; border: none; color: white; 
             padding: 12px 25px; border-radius: 25px; 
-            cursor: pointer; transition: all 0.3s ease;
-            font-weight: bold;
+            cursor: pointer; transition: 0.3s; font-weight: 600;
         }
-
-        button:hover { 
-            background: #00a8a8; transform: scale(1.05); 
-        }
-
+        button:hover { background: #00a8a8; transform: scale(1.05); }
         #response-area { 
-            margin-top: 30px; width: 85%; max-width: 650px; 
-            text-align: center; font-size: 18px; line-height: 1.6; 
-            color: #e0e0e0; min-height: 50px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            margin-top: 30px; width: 85%; max-width: 600px; 
+            text-align: center; font-size: 17px; line-height: 1.6; color: #ccc;
         }
-
-        .loading { color: #00d1d1; font-style: italic; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        .status { color: #00d1d1; font-style: italic; }
     </style>
 </head>
 <body>
     <canvas id="canvas"></canvas>
-
     <div class="ui-container">
-        <div class="content-box">
-            <div class="logo-wrapper">
-                <img src="logo.png" alt="CORE AI" class="logo">
-            </div>
-            
-            <div class="search-container">
-                <input type="text" id="searchInput" placeholder="اسأل CORE AI..." onkeypress="if(event.key==='Enter') sendRequest()">
-                <button onclick="sendRequest()">إرسال</button>
-            </div>
-
-            <div id="response-area"></div>
+        <img src="logo.png" alt="CORE AI" class="logo">
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Ask CORE AI anything..." onkeypress="if(event.key==='Enter') sendRequest()">
+            <button onclick="sendRequest()">Send</button>
         </div>
+        <div id="response-area"></div>
     </div>
 
     <script>
-        // --- محرك الربط مع API Vercel ---
         async function sendRequest() {
             const input = document.getElementById('searchInput');
             const responseArea = document.getElementById('response-area');
             const message = input.value.trim();
-
             if (!message) return;
 
-            responseArea.innerHTML = '<span class="loading">جاري التفكير...</span>';
+            responseArea.innerHTML = '<span class="status">Analyzing...</span>';
             input.value = "";
 
             try {
@@ -121,35 +74,28 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: message })
                 });
-
                 const data = await response.json();
                 responseArea.innerText = data.reply;
             } catch (error) {
-                responseArea.innerHTML = '<span style="color: #ff4b4b;">خطأ في الاتصال بالسيرفر.</span>';
+                responseArea.innerHTML = '<span style="color: #ff4b4b;">Error: Check API configuration.</span>';
             }
         }
 
-        // --- محرك الفيزياء الفخم (Particles) ---
+        // Particle Background Logic
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
-
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize);
         resize();
-
         class Particle {
             constructor() { this.reset(); }
             reset() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 0.6;
-                this.vy = (Math.random() - 0.5) * 0.6;
-                this.radius = Math.random() * 2.5;
-                this.alpha = Math.random() * 0.5 + 0.1;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.radius = Math.random() * 2;
             }
             update() {
                 this.x += this.vx; this.y += this.vy;
@@ -159,19 +105,14 @@
             draw() {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(0, 128, 128, ${this.alpha})`;
+                ctx.fillStyle = 'rgba(0, 128, 128, 0.4)';
                 ctx.fill();
             }
         }
-
-        for (let i = 0; i < 100; i++) particles.push(new Particle());
-
+        for (let i = 0; i < 80; i++) particles.push(new Particle());
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
+            particles.forEach(p => { p.update(); p.draw(); });
             requestAnimationFrame(animate);
         }
         animate();
