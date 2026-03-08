@@ -2,20 +2,20 @@ import streamlit as st
 import base64
 from pathlib import Path
 
-# --- 1. تصفير إعدادات الصفحة تماماً ---
+# --- 1. إعداد الصفحة بأقصى عرض ممكن ---
 st.set_page_config(page_title="CORE AI", layout="wide", initial_sidebar_state="collapsed")
 
-# --- 2. كود CSS جبار لإلغاء وجود ستريمليت بصرياً ---
+# --- 2. كود السحر لقتل هوامش ستريمليت نهائياً ---
 st.markdown("""
     <style>
-        /* إخفاء كل شيء يخص ستريمليت */
+        /* إخفاء كل زوائد ستريمليت بصرياً وبرمجياً */
         #MainMenu, footer, header, [data-testid="stSidebar"] {display: none !important;}
         
-        /* جعل الحاوية الأساسية بدون أي هوامش أو مسافات */
-        .stApp { background-color: #191a1a !important; }
+        /* تصفير الحواف والمساحات البيضاء */
+        .stApp { background-color: #191a1a !important; padding: 0 !important; }
         .main .block-container { padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
         
-        /* إجبار الإطار (iframe) على ملء الشاشة بالكامل كخلفية ثابتة */
+        /* إجبار الإطار على أخذ كامل مساحة المتصفح بصرف النظر عن أي شيء */
         iframe {
             position: fixed;
             top: 0;
@@ -28,33 +28,25 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 3. تجهيز اللوجو (Base64) لضمان ظهوره ---
-def get_image_base64(path):
-    p = Path(path)
-    if p.exists():
-        with open(p, "rb") as f:
-            return base64.b64encode(f.read()).decode()
+# --- 3. قراءة وحقن ملف index.html ---
+ROOT = Path(__file__).resolve().parent
+index_path = ROOT / "index.html"
+
+def get_base64_img(path):
+    if Path(path).exists():
+        return base64.b64encode(open(path, "rb").read()).decode()
     return ""
 
-ROOT = Path(__file__).resolve().parent
-logo_b64 = get_image_base64(ROOT / "logo.png") or get_image_base64(ROOT / "logo.jpg")
-
-# --- 4. عرض ملف index.html الأصلي بكامل قوته ---
-index_path = ROOT / "index.html"
 if index_path.exists():
     html_content = index_path.read_text(encoding="utf-8")
     
-    # حقن اللوجو في مكانه الصحيح
+    # تأمين ظهور اللوجو داخل الإطار
+    logo_b64 = get_base64_img(ROOT / "logo.png") or get_base64_img(ROOT / "logo.jpg")
     if logo_b64:
         html_content = html_content.replace('src="logo.png"', f'src="data:image/png;base64,{logo_b64}"')
         html_content = html_content.replace('src="logo.jpg"', f'src="data:image/jpeg;base64,{logo_b64}"')
 
-    # عرض الملف كـ Component وحيد يسيطر على المتصفح
-    st.components.v1.html(html_content, height=2000) # ارتفاع كبير لضمان عدم ظهور فراغ
+    # عرض الملف كـ Full Viewport Component
+    st.components.v1.html(html_content, height=2000) # ارتفاع كبير لمنع التقطيع
 else:
-    st.error("تأكد أن ملف index.html موجود في نفس المجلد!")
-
-# --- 5. محرك استقبال الرسائل ---
-query = st.query_params.get("user_query")
-if query:
-    st.toast(f"جاري معالجة طلبك: {query}")
+    st.error("Error: index.html not found in ROOT directory.")
