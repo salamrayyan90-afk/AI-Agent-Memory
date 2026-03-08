@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CORE AI | المحرك الذكي</title>
     <style>
-        /* التنسيق الأساسي لملء الشاشة */
+        /* التنسيق الأساسي لضمان ملء الشاشة 100% */
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
             overflow: hidden; background: #0a0a0a; 
@@ -20,22 +20,28 @@
             position: relative; z-index: 2; display: flex; 
             flex-direction: column; align-items: center; 
             justify-content: center; height: 100vh; color: white; 
-            background: rgba(0, 0, 0, 0.2);
+            pointer-events: none; /* للسماح بالتفاعل مع الخلفية عند الحاجة */
+        }
+
+        .content-box {
+            pointer-events: auto; /* لإعادة التفاعل مع عناصر الإدخال */
+            display: flex; flex-direction: column; align-items: center;
+            width: 100%;
         }
 
         .logo { 
             width: 180px; margin-bottom: 30px; 
-            filter: drop-shadow(0 0 10px rgba(0, 128, 128, 0.5));
+            filter: drop-shadow(0 0 15px rgba(0, 128, 128, 0.6));
         }
 
         .search-container { 
-            background: rgba(255, 255, 255, 0.05); 
+            background: rgba(255, 255, 255, 0.07); 
             padding: 5px 15px; border-radius: 50px; 
             display: flex; align-items: center; 
             width: 85%; max-width: 650px; 
-            backdrop-filter: blur(15px);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         }
 
         input { 
@@ -58,30 +64,33 @@
         #response-area { 
             margin-top: 30px; width: 85%; max-width: 650px; 
             text-align: center; font-size: 18px; line-height: 1.6; 
-            color: #ccc; min-height: 50px;
+            color: #e0e0e0; min-height: 50px;
             padding: 20px; border-radius: 15px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
-        /* تأثير جاري التفكير */
-        .loading { color: #008080; font-style: italic; }
+        .loading { color: #00d1d1; font-style: italic; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
     </style>
 </head>
 <body>
     <canvas id="canvas"></canvas>
 
     <div class="ui-container">
-        <img src="logo.png" alt="CORE AI" class="logo">
-        
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="اسأل CORE AI عن أي شيء..." onkeypress="handleKeyPress(event)">
-            <button onclick="sendRequest()">إرسال</button>
-        </div>
+        <div class="content-box">
+            <img src="logo.png" alt="CORE AI" class="logo">
+            
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="اسأل CORE AI عن أي شيء..." onkeypress="if(event.key==='Enter') sendRequest()">
+                <button onclick="sendRequest()">إرسال</button>
+            </div>
 
-        <div id="response-area"></div>
+            <div id="response-area"></div>
+        </div>
     </div>
 
     <script>
-        // --- 1. محرك الربط مع API Vercel ---
+        // --- 1. محرك الربط مع API Vercel (بدون Alert) ---
         async function sendRequest() {
             const input = document.getElementById('searchInput');
             const responseArea = document.getElementById('response-area');
@@ -89,32 +98,28 @@
 
             if (!message) return;
 
-            // تحديث الواجهة لبدء المعالجة
-            responseArea.innerHTML = '<span class="loading">جاري التفكير في رد مناسب...</span>';
+            responseArea.innerHTML = '<span class="loading">جاري التفكير...</span>';
+            const originalValue = message;
             input.value = "";
 
             try {
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: message })
+                    body: JSON.stringify({ message: originalValue })
                 });
 
-                if (!response.ok) throw new Error('فشل الاتصال بالسيرفر');
+                if (!response.ok) throw new Error('فشل السيرفر');
 
                 const data = await response.json();
                 responseArea.innerText = data.reply;
             } catch (error) {
-                responseArea.innerHTML = '<span style="color: #ff4b4b;">حدث خطأ: تأكد من إعداد مفاتيح API في Vercel بشكل صحيح.</span>';
+                responseArea.innerHTML = '<span style="color: #ff4b4b;">خطأ: تأكد من إضافة GROQ_API_KEY في إعدادات Vercel.</span>';
                 console.error('Error:', error);
             }
         }
 
-        function handleKeyPress(e) {
-            if (e.key === 'Enter') sendRequest();
-        }
-
-        // --- 2. محرك الفيزياء (Physics Background) ---
+        // --- 2. محرك الفيزياء (Physics Background) لضمان الحركة الفخمة ---
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -123,7 +128,6 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
-
         window.addEventListener('resize', resize);
         resize();
 
@@ -134,9 +138,10 @@
             reset() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = (Math.random() - 0.5) * 0.5;
-                this.radius = Math.random() * 2;
+                this.vx = (Math.random() - 0.5) * 0.7;
+                this.vy = (Math.random() - 0.5) * 0.7;
+                this.radius = Math.random() * 2.5;
+                this.alpha = Math.random() * 0.5 + 0.2;
             }
             update() {
                 this.x += this.vx;
@@ -147,19 +152,33 @@
             draw() {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(0, 128, 128, 0.5)';
+                ctx.fillStyle = `rgba(0, 128, 128, ${this.alpha})`;
                 ctx.fill();
             }
         }
 
-        for (let i = 0; i < 100; i++) particles.push(new Particle());
+        for (let i = 0; i < 120; i++) particles.push(new Particle());
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
+            // رسم خطوط بسيطة بين الجسيمات القريبة لزيادة الجمالية
+            for(let i=0; i<particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                for(let j=i+1; j<particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if(dist < 100) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(0, 128, 128, ${0.1 * (1 - dist/100)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
             requestAnimationFrame(animate);
         }
         animate();
