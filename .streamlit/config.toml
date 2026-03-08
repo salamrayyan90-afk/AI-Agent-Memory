@@ -1,0 +1,8 @@
+# CORE AI — Streamlit config for cloud and headless deployment
+[server]
+headless = true
+enableCORS = false
+enableXsrfProtection = true
+
+[browser]
+gatherUsageStats = false
