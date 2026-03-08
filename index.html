@@ -468,16 +468,23 @@
         const searchInput = document.getElementById('searchInput');
         const submitBtn = document.getElementById('submitBtn');
 
-        hideSidebarBtn.addEventListener('click', () => {
-            sidebar.classList.add('collapsed');
-            mainContent.classList.add('full-width');
-        });
+        // --- وظيفة الربط مع بايثون (Streamlit) ---
+        function sendToPython() {
+            const val = searchInput.value.trim();
+            if (val.length > 0) {
+                // إرسال النص إلى السكريبت الخارجي
+                window.parent.postMessage({
+                    type: 'streamlit:set_widget_value',
+                    data: {value: val, key: 'user_query'}
+                }, '*');
+                
+                // تنظيف المربع بعد الإرسال
+                searchInput.value = '';
+                submitBtn.classList.remove('active');
+            }
+        }
 
-        showSidebarBtn.addEventListener('click', () => {
-            sidebar.classList.remove('collapsed');
-            mainContent.classList.remove('full-width');
-        });
-
+        // تفعيل الزر عند الكتابة
         searchInput.addEventListener('input', () => {
             if (searchInput.value.trim().length > 0) {
                 submitBtn.classList.add('active');
@@ -486,12 +493,23 @@
             }
         });
 
-        submitBtn.addEventListener('click', () => {
-            if (submitBtn.classList.contains('active')) {
-                alert('Searching for: ' + searchInput.value);
-                searchInput.value = '';
-                submitBtn.classList.remove('active');
-            }
+        // إرسال عند الضغط على الزر
+        submitBtn.addEventListener('click', sendToPython);
+
+        // إرسال عند الضغط على Enter
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendToPython();
+        });
+
+        // --- الأكواد الباقية للواجهة ---
+        hideSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('full-width');
+        });
+
+        showSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.remove('collapsed');
+            mainContent.classList.remove('full-width');
         });
 
         const themeToggle = document.getElementById('themeToggle');
@@ -516,13 +534,7 @@
         });
 
         const codeBg = document.getElementById('codeBg');
-        const iconClasses = [
-            'fas fa-code', 'fas fa-terminal', 'fas fa-database', 'fas fa-microchip',
-            'fas fa-network-wired', 'fas fa-file-code', 'fab fa-python', 'fab fa-js-square',
-            'fab fa-html5', 'fab fa-css3-alt', 'fas fa-cube', 'fas fa-robot',
-            'fas fa-brain', 'fas fa-cogs', 'fas fa-eye', 'fas fa-language',
-            'fas fa-project-diagram', 'fas fa-microscope', 'fas fa-flask'
-        ];
+        const iconClasses = ['fas fa-code', 'fas fa-terminal', 'fas fa-database', 'fas fa-microchip', 'fas fa-network-wired', 'fas fa-file-code', 'fab fa-python', 'fab fa-js-square', 'fab fa-html5', 'fab fa-css3-alt', 'fas fa-cube', 'fas fa-robot', 'fas fa-brain', 'fas fa-cogs', 'fas fa-eye', 'fas fa-language', 'fas fa-project-diagram', 'fas fa-microscope', 'fas fa-flask'];
         const particles = [];
         const particleCount = 60;
 
