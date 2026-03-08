@@ -1,24 +1,4 @@
-# Required for cloud deployment (exact set)
 streamlit
 groq
-psutil
-python-dotenv
-requests
-
-# App and optional features
-pillow
-playwright
-browser-use
-google-generativeai
-google-api-python-client
-google-auth-oauthlib
-pandas
 beautifulsoup4
-streamlit-paste-button
-duckduckgo-search
-chromadb
-langchain
-langchain-community
-langchain-core
-sentence-transformers
-schedule
+requests
