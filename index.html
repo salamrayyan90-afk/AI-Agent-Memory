@@ -24,8 +24,13 @@
         }
 
         html, body {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
+            min-width: 100vw;
+            min-height: 100vh;
             overflow: hidden;
             background-color: var(--bg-color);
             color: var(--text-primary);
@@ -134,6 +139,25 @@
         .submit-btn.active:hover {
             filter: brightness(1.1);
         }
+
+        .submit-btn.loading {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .message-feedback {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            min-height: 1.2em;
+        }
+
+        .message-feedback.error {
+            color: #e57373;
+        }
+
+        .message-feedback.success {
+            color: var(--accent-color);
+        }
     </style>
 </head>
 <body>
@@ -151,31 +175,79 @@
                 </button>
             </div>
         </div>
+        <div class="message-feedback" id="messageFeedback" aria-live="polite"></div>
     </div>
     <script>
-        const searchInput = document.getElementById('searchInput');
-        const submitBtn = document.getElementById('submitBtn');
+        (function() {
+            var searchInput = document.getElementById('searchInput');
+            var submitBtn = document.getElementById('submitBtn');
+            var messageFeedback = document.getElementById('messageFeedback');
 
-        function sendToStreamlit() {
-            const val = searchInput.value.trim();
-            if (!val) return;
-            var url = (window.parent.location.pathname || '/') + (window.parent.location.search || '');
-            var sep = url.indexOf('?') >= 0 ? '&' : '?';
-            window.parent.location.href = url + sep + 'user_query=' + encodeURIComponent(val);
-        }
+            // عنوان الـ API — غيّره عند ربط الـ Backend
+            var API_BASE = window.CORE_AI_API || '';
+            var API_CHAT_ENDPOINT = API_BASE + '/api/chat';
 
-        searchInput.addEventListener('input', function() {
-            if (searchInput.value.trim().length > 0) {
-                submitBtn.classList.add('active');
-            } else {
-                submitBtn.classList.remove('active');
+            function setFeedback(text, isError) {
+                messageFeedback.textContent = text || '';
+                messageFeedback.className = 'message-feedback' + (isError ? ' error' : text ? ' success' : '');
             }
-        });
 
-        submitBtn.addEventListener('click', sendToStreamlit);
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') sendToStreamlit();
-        });
+            function setLoading(loading) {
+                if (loading) {
+                    submitBtn.classList.add('loading');
+                    submitBtn.setAttribute('aria-busy', 'true');
+                } else {
+                    submitBtn.classList.remove('loading');
+                    submitBtn.removeAttribute('aria-busy');
+                }
+            }
+
+            function sendToAPI() {
+                var val = searchInput.value.trim();
+                if (!val) return;
+
+                setFeedback('');
+                setLoading(true);
+
+                fetch(API_CHAT_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: val })
+                })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
+                .then(function(data) {
+                    searchInput.value = '';
+                    submitBtn.classList.remove('active');
+                    setFeedback(data.reply || 'تم الإرسال.', false);
+                    setTimeout(function() { setFeedback(''); }, 3000);
+                })
+                .catch(function(err) {
+                    setFeedback('لم يتم الاتصال بالخادم. سيتم ربط الـ Backend لاحقاً.', true);
+                })
+                .finally(function() {
+                    setLoading(false);
+                });
+            }
+
+            searchInput.addEventListener('input', function() {
+                if (searchInput.value.trim().length > 0) {
+                    submitBtn.classList.add('active');
+                } else {
+                    submitBtn.classList.remove('active');
+                }
+            });
+
+            submitBtn.addEventListener('click', function() {
+                if (submitBtn.classList.contains('active')) sendToAPI();
+            });
+
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') sendToAPI();
+            });
+        })();
     </script>
 </body>
 </html>
